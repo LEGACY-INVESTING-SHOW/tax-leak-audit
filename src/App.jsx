@@ -32,13 +32,30 @@ export default function App() {
 
   const update = (field, value) => setFormData((prev) => ({ ...prev, [field]: value }));
 
+  const resetScrollToTop = () => {
+    topRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
   const goToStep = (nextStep) => {
     if (nextStep > step && nextStep <= 4) {
       trackEvent("step_completed", { step, next_step: nextStep });
     }
     setStep(nextStep);
-    topRef.current?.scrollIntoView({ behavior: "smooth" });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    requestAnimationFrame(() => {
+      resetScrollToTop();
+      setTimeout(resetScrollToTop, 0);
+    });
+  };
+
+  const handleBusinessIncomeToggle = (enabled) => {
+    setFormData((prev) => ({
+      ...prev,
+      hasBusinessIncome: enabled,
+      businessIncome: enabled && prev.businessIncome === "" ? 0 : prev.businessIncome,
+    }));
   };
 
   const startAudit = () => {
@@ -195,7 +212,7 @@ export default function App() {
                 value={formData.w2Income}
                 onChange={(value) => update("w2Income", value)}
                 prefix="$"
-                placeholder="150000"
+                placeholder="0"
               />
             </div>
           )}
@@ -208,7 +225,7 @@ export default function App() {
               <ToggleField
                 label="Do you have business or self-employment income?"
                 value={formData.hasBusinessIncome}
-                onChange={(value) => update("hasBusinessIncome", value)}
+                onChange={handleBusinessIncomeToggle}
               />
 
               {formData.hasBusinessIncome && (
@@ -218,7 +235,7 @@ export default function App() {
                     value={formData.businessIncome}
                     onChange={(value) => update("businessIncome", value)}
                     prefix="$"
-                    placeholder="50000"
+                    placeholder="0"
                   />
 
                   <ToggleField
@@ -255,7 +272,7 @@ export default function App() {
                     value={formData.propertyValue}
                     onChange={(value) => update("propertyValue", value)}
                     prefix="$"
-                    placeholder="300000"
+                    placeholder="0"
                   />
 
                   <ToggleField
@@ -285,7 +302,7 @@ export default function App() {
                 value={formData.retirementContribution}
                 onChange={(value) => update("retirementContribution", value)}
                 prefix="$"
-                placeholder="500"
+                placeholder="0"
               />
 
               <ToggleField
@@ -300,7 +317,7 @@ export default function App() {
                   value={formData.hsaContribution}
                   onChange={(value) => update("hsaContribution", value)}
                   prefix="$"
-                  placeholder="3000"
+                  placeholder="0"
                 />
               )}
             </div>
@@ -316,7 +333,7 @@ export default function App() {
                 value={formData.monthlyInvestable}
                 onChange={(value) => update("monthlyInvestable", value)}
                 prefix="$"
-                placeholder="1000"
+                placeholder="0"
               />
 
               <InputField
@@ -324,7 +341,7 @@ export default function App() {
                 value={formData.lumpSum}
                 onChange={(value) => update("lumpSum", value)}
                 prefix="$"
-                placeholder="25000"
+                placeholder="0"
               />
             </div>
           )}
@@ -360,7 +377,7 @@ export default function App() {
       )}
 
       {step === 5 && results && (
-        <div className="relative mx-auto max-w-xl px-5 py-12 text-center">
+        <div className="relative mx-auto max-w-xl px-5 pb-12 pt-20 text-center sm:pt-24">
           <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full border-2 border-red-500/30 bg-red-500/10">
             <span className="text-3xl font-bold text-red-400">{results.grade}</span>
           </div>
@@ -385,7 +402,9 @@ export default function App() {
                 <span className="flex items-center gap-2 text-sm text-slate-300">
                   {leak.icon} {leak.name}
                 </span>
-                <span className="text-sm text-slate-600">{leak.amount > 0 ? "••••••" : "Optimized ✓"}</span>
+                <span className="text-sm text-slate-600">
+                  {leak.amount > 0 ? "••••••" : leak.status === "neutral" ? "N/A" : "Optimized ✓"}
+                </span>
               </div>
             ))}
             <p className="mt-3 text-center text-xs text-slate-500">Enter your email to unlock the full breakdown</p>

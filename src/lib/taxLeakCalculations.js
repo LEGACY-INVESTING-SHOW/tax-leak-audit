@@ -28,7 +28,6 @@ const TAX_BRACKETS_HOH_2025 = [
   { min: 626350, max: Infinity, rate: 0.37 },
 ];
 
-const SS_WAGE_BASE = 176100;
 const HOME_OFFICE_SIMPLIFIED = 1500;
 const AUGUSTA_RULE_DAYS = 14;
 const AVG_DAILY_RENTAL_RATE = 1500;
@@ -98,14 +97,10 @@ export function calculateLeaks(data) {
 
   if (data.hasBusinessIncome && data.businessIncome > 0) {
     if (!data.hasSCorp && data.businessIncome >= 40000) {
-      const reasonableSalary = Math.min(data.businessIncome * 0.45, data.businessIncome);
-      const distributions = data.businessIncome - reasonableSalary;
-      const seTaxCapRoom = SS_WAGE_BASE - data.w2Income > 0 ? SS_WAGE_BASE - data.w2Income : 0;
-      const seTaxSaved = Math.min(distributions, seTaxCapRoom) * 0.153;
-
-      entityLeak = Math.max(Math.round(seTaxSaved * 0.6), 0);
       if (data.businessIncome > 80000) {
         entityLeak = Math.round(data.businessIncome * 0.06);
+      } else {
+        entityLeak = Math.round(data.businessIncome * 0.55 * 0.153 * 0.6);
       }
 
       entityStatus = "red";

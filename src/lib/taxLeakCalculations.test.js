@@ -45,4 +45,40 @@ describe("taxLeakCalculations", () => {
 
     expect(["A", "B+"]).toContain(results.grade);
   });
+
+  it.each([50000, 100000, 150000])(
+    "flags entity structure leak when business income is %s and S-Corp is off",
+    (businessIncome) => {
+      const results = calculateLeaks({
+        ...DEFAULT_FORM_DATA,
+        filingStatus: "married",
+        age: 35,
+        w2Income: 225000,
+        hasBusinessIncome: true,
+        businessIncome,
+        hasSCorp: false,
+      });
+
+      const entity = results.leaks.find((leak) => leak.id === "entity");
+
+      expect(entity).toBeDefined();
+      expect(entity.status).toBe("red");
+      expect(entity.amount).toBeGreaterThan(0);
+    }
+  );
+
+  it("shows neutral entity status when business income is enabled but amount is zero", () => {
+    const results = calculateLeaks({
+      ...DEFAULT_FORM_DATA,
+      filingStatus: "married",
+      w2Income: 225000,
+      hasBusinessIncome: true,
+      businessIncome: 0,
+      hasSCorp: false,
+    });
+
+    const entity = results.leaks.find((leak) => leak.id === "entity");
+    expect(entity.status).toBe("neutral");
+    expect(entity.amount).toBe(0);
+  });
 });
