@@ -248,7 +248,7 @@ export function calculateLeaks(data) {
   const deductionDetails = [];
   const deductionStrategies = [];
 
-  if (data.hasBusinessIncome && !data.hasHomeOffice) {
+  if (data.hasBusinessIncome && data.businessIncome > 0 && !data.hasHomeOffice) {
     const homeOfficeSavings = Math.round(HOME_OFFICE_SIMPLIFIED * marginalRate);
     deductionLeak += homeOfficeSavings;
     deductionDetails.push(`Home office simplified method can provide ${formatCurrency(HOME_OFFICE_SIMPLIFIED)} deduction.`);

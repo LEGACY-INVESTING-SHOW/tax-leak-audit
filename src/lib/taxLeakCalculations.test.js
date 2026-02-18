@@ -81,4 +81,30 @@ describe("taxLeakCalculations", () => {
     expect(entity.status).toBe("neutral");
     expect(entity.amount).toBe(0);
   });
+
+  it("does not apply business-only deductions when business income is zero", () => {
+    const noBusiness = calculateLeaks({
+      ...DEFAULT_FORM_DATA,
+      filingStatus: "married",
+      w2Income: 225000,
+      hasBusinessIncome: false,
+      businessIncome: 0,
+      retirementContribution: 500,
+      monthlyInvestable: 700,
+      lumpSum: 25000,
+    });
+
+    const businessToggleOnZeroIncome = calculateLeaks({
+      ...DEFAULT_FORM_DATA,
+      filingStatus: "married",
+      w2Income: 225000,
+      hasBusinessIncome: true,
+      businessIncome: 0,
+      retirementContribution: 500,
+      monthlyInvestable: 700,
+      lumpSum: 25000,
+    });
+
+    expect(businessToggleOnZeroIncome.totalAnnualLeak).toBe(noBusiness.totalAnnualLeak);
+  });
 });
